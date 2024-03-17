@@ -1,0 +1,93 @@
+---
+title: "Forecasting Air Passengers"
+author: "Ajanth Kirubagaran"
+date: "2024-03-16"
+output: html_document
+---
+## Introduction
+
+The objective of this project is to utilize Metas prophet forecasting system to forecast future values of international airline passengers based on the data of  historical passenger counts.
+
+
+We are going to load our required package
+
+```{r}
+# Load required packages
+library(prophet)
+```
+## Dataset
+
+The data set I have chosen is the inbuilt "AirPassengers" data set, which tells us the monthly totals of international airline passengers from 1949 to 1960.
+
+
+we are going to Load our Air Passengers data set
+
+```{r}
+data("AirPassengers")
+```
+
+Im going to examine the contents of this data set
+
+```{r}
+print(AirPassengers)
+```
+## Decomposing Air Passenger Data: Trend, Seasonality, and Noise
+
+
+We are going to decompose the Air passengers dataset so we get a better understanding of its components such as trend, seasonality and noise.
+
+```{r}
+decomposed <- decompose(AirPassengers)
+plot(decomposed)
+```
+
+
+
+
+The increasing trend shows consistent growth in Air Passengers over time and hence the increase in demand of air travel  over time.The recurring spikes in Air passengers from seasonality  every year shows strong seasonal patterns in Air Passenger counts. This can illustrate periods such as  holidays, summer vacations, or other seasonal events where there is an increase in demand of air travel. The randomness of residuals can illustrate  that most of the variability in the data has been captured by the trend and seasonal components, which tells us that it’s a good decomposition of the original time series.
+
+
+
+
+
+
+
+
+
+
+## Exploring Future forecasts using Prophet
+
+We are going to create a data frame with two columns where ds represents the dates and y is the number of air passengers, which would be used for modelling purposes
+
+```{r}
+Airpassengers.df = data.frame(
+  ds=zoo::as.yearmon(time(AirPassengers)), 
+  y=AirPassengers)
+```
+
+"m" will be the fitted prophet model, which can be used to make predictions aswell as plot forecasts of future air passengers.
+
+```{r}
+library(prophet)
+m = prophet::prophet(Airpassengers.df)
+```
+
+```{r}
+m <- prophet(Airpassengers.df, weekly.seasonality = FALSE, daily.seasonality = FALSE)
+```
+
+We are going to create a data frame labelled "f" containing future dates for forecasting. 
+```{r}
+f <- make_future_dataframe(m, periods = 24, freq = "month")
+```
+We will generates predictions for the future dates using the fitted Prophet model and the data frame containing future dates. 
+```{r}
+p <- predict(m, f)
+```
+We will now generate a plot displaying the original time series data, historical data points, fitted values and forecasted values.
+```{r}
+plot(m,p)
+```
+
+The light blue shaded area denotes the confidence interval of Meta's Prophet forecasting system. The relatively small area suggests accurate predictions of the data. However, starting around 1956, there is notable dispersion between actual and forecasted values, indicating increased volatility. This discrepancy suggests that the forecast may not accurately reflect the data in later years. Additionally, the graph reveals pronounced seasonality, consistent with earlier analysis of the Air Passengers dataset decomposition. This seasonality reflects periodic spikes in demand for air travel, notably during periods such as summer vacations.
+
